@@ -82,18 +82,3 @@ resource "aws_instance" "bastions" {
     Name = "bastion-${each.key}"
   }
 }
-
-# Call the ssm_exec module to run remote install commands on bastions
-module "ssm_exec" {
-  for_each = aws_instance.bastions
-  source      = "./modules/ssm_exec"
-  instance_id = aws_instance.bastions[each.key].id
-  region      = var.region
-
-  commands = [
-    "sudo yum install -y git",
-    "curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip",
-    "unzip awscliv2.zip",
-    "sudo ./aws/install"
-  ]
-}
