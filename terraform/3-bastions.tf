@@ -78,7 +78,21 @@ resource "aws_instance" "bastions" {
   vpc_security_group_ids      = [aws_security_group.bastion_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.bastion_instance_profile.name
 
+  # Install kubectl + aws-cli
+  user_data = <<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y awscli jq
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              chmod +x kubectl
+              mv kubectl /usr/local/bin/
+              mkdir -p /home/ec2-user/.kube
+              chown -R ec2-user:ec2-user /home/ec2-user/.kube
+              EOF
+
   tags = {
     Name = "bastion-${each.key}"
   }
 }
+
+
